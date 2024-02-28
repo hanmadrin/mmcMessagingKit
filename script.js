@@ -3840,6 +3840,74 @@ const contentSetup = async()=>{
                 
 
             })
+            contentScripts.showDebugButton('Mark as Link Gone', async()=>{
+                const tabUrl = window.location.href;
+                const itemID = tabUrl.match(/\d+/g).map(Number)[0];
+                const url = `https://www.facebook.com/marketplace/item/${itemID}`;
+                console.log(url);
+                const query = `
+                            query{
+                                items_page_by_column_values(board_id:1250230293,
+                                columns:[{column_id:"text7",column_values:["${url}"]}]){
+                                    items{
+                                        id
+                                    }
+                                }
+                            }
+                        `;
+                const item = await mondayFetch(query);
+                const itemData = await item.json();
+                if(itemData.errors){
+                    contentScripts.showWorkingStep('Error in fetching item');
+                    return false;
+                }
+                const itemCount = itemData.data.items_page_by_column_values.items.length;
+                if(itemCount==0){
+                    contentScripts.showWorkingStep('This item do not exists on monday BOR Board');
+                    return false;
+                }
+                const singleItem = itemData.data.items_page_by_column_values.items[0];
+                // updates that has my id as creator id
+                const id = singleItem.id;
+                const changeStatus = `
+                        mutation {
+                            change_simple_column_value(
+                                item_id: ${id}, 
+                                board_id: ${fixedData.mondayFetch.borEffortBoardId}, 
+                                column_id: "${fixedData.mondayFetch.columnValuesIds.borEffortBoard.status}", 
+                                value: "Link Gone") {
+                                id
+                            }
+                        }
+                `;
+                try{
+                    const changedStatus = await mondayFetch(changeStatus);
+                    const changedStatusData = await changedStatus.json();
+                    if(changedStatusData.errors){
+                        contentScripts.showWorkingStep('Error in changing status');
+                    }else{
+                        contentScripts.showWorkingStep('Status Changed');
+                    }
+
+                }catch(e){
+                    contentScripts.showWorkingStep('Error in changing status');
+                }
+
+
+                // const updateUser = `
+                //     mutation{
+                //         change_simple_column_value(board_id:${fixedData.mondayFetch.borEffortBoardId},
+                //         item_id:${id},
+                //         column_id: "${fixedData.mondayFetch.columnValuesIds.borEffortBoard.person}",
+                //         value: "${fixedData.mondayFetch.myAccountId}") 
+                //         {
+                //             id
+                //         }
+                //     }
+                // `;
+                
+
+            })
         }else{
             contentScripts.showDataOnConsole('Please Save required values and restart');
         }
