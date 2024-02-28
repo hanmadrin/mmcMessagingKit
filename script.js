@@ -3676,6 +3676,7 @@ const contentSetup = async()=>{
                                 }
                                 statusSelect.append(option);
                                 statusSelect.onchange = async()=>{
+                                    statusSelect.disabled = true;
                                     const query = `
                                         mutation{
                                             change_simple_column_value(
@@ -3687,9 +3688,13 @@ const contentSetup = async()=>{
                                             }
                                         }
                                     `;
-                                    const update = await mondayFetch(query);
-                                    const updateData = await update.json();
-                                    console.log(updateData);
+                                    try{
+                                        const update = await mondayFetch(query);
+                                        const updateData = await update.json();
+                                        console.log(updateData);
+                                    }catch(e){
+                                        statusSelect.disabled = false;
+                                    }
                                 };
                             }
                             status.append(statusSelect);
@@ -3756,6 +3761,9 @@ const contentSetup = async()=>{
                 await navigator.clipboard.writeText(randomFirstMessage);
                 contentScripts.showWorkingStep(`Random First Message Copied`);
             });
+            contentScripts.showDebugButton('Mark as First MSG SENT', async()=>{
+
+            })
         }else{
             contentScripts.showDataOnConsole('Please Save required values and restart');
         }
