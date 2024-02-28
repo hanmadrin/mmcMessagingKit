@@ -3586,7 +3586,7 @@ const contentSetup = async()=>{
     // const accountInfo = await contentScripts.accountInfo();
     // console.log(accountInfo);
     const a = document.createElement('a');
-    a.href = 'https://www.facebook.com/marketplace/item/1468309867080165/kuesgfr88s7iuhf8s76';
+    a.href = 'https://www.facebook.com/marketplace/item/1588908385216701/kuesgfr88s7iuhf8s76';
     document.body.append(a);
     contentScripts.setupConsoleBoard();
     
@@ -3691,10 +3691,12 @@ const contentSetup = async()=>{
                                     try{
                                         const update = await mondayFetch(query);
                                         const updateData = await update.json();
+                                        contentScripts.showWorkingStep('Status Updated');
                                         console.log(updateData);
                                     }catch(e){
-                                        statusSelect.disabled = false;
+                                        contentScripts.showWorkingStep('Error in updating status');
                                     }
+                                    statusSelect.disabled = false;
                                 };
                             }
                             status.append(statusSelect);
@@ -3707,6 +3709,8 @@ const contentSetup = async()=>{
                         const vinButton = document.createElement('button');
                         vinButton.innerText = 'save';
                         vinButton.onclick = async()=>{
+                            vinButton.disabled = true;
+
                             const query = `
                                 mutation{
                                     change_simple_column_value(
@@ -3718,9 +3722,16 @@ const contentSetup = async()=>{
                                     }
                                 }
                             `;
-                            const update = await mondayFetch(query);
-                            const updateData = await update.json();
-                            console.log(updateData);
+                            try{
+                                const update = await mondayFetch(query);
+                                const updateData = await update.json();
+                                console.log(updateData);
+                                contentScripts.showWorkingStep('Vin Updated');
+                            }catch(e){
+                                contentScripts.showWorkingStep('Error in updating vin');
+                            }
+                            vinButton.disabled = false;
+
                         };
                         vin.append(vinInput,vinButton);
                         statusAndVin.append(status,vin);
@@ -3762,6 +3773,71 @@ const contentSetup = async()=>{
                 contentScripts.showWorkingStep(`Random First Message Copied`);
             });
             contentScripts.showDebugButton('Mark as First MSG SENT', async()=>{
+                const tabUrl = window.location.href;
+                const itemID = tabUrl.match(/\d+/g).map(Number)[0];
+                const url = `https://www.facebook.com/marketplace/item/${itemID}`;
+                console.log(url);
+                const query = `
+                            query{
+                                items_page_by_column_values(board_id:1250230293,
+                                columns:[{column_id:"text7",column_values:["${url}"]}]){
+                                    items{
+                                        id
+                                    }
+                                }
+                            }
+                        `;
+                const item = await mondayFetch(query);
+                const itemData = await item.json();
+                if(itemData.errors){
+                    contentScripts.showWorkingStep('Error in fetching item');
+                    return false;
+                }
+                const itemCount = itemData.data.items_page_by_column_values.items.length;
+                if(itemCount==0){
+                    contentScripts.showWorkingStep('This item do not exists on monday BOR Board');
+                    return false;
+                }
+                const singleItem = itemData.data.items_page_by_column_values.items[0];
+                // updates that has my id as creator id
+                const id = singleItem.id;
+                const changeStatus = `
+                        mutation {
+                            change_simple_column_value(
+                                item_id: ${id}, 
+                                board_id: ${fixedData.mondayFetch.borEffortBoardId}, 
+                                column_id: "${fixedData.mondayFetch.columnValuesIds.borEffortBoard.status}", 
+                                value: "1st MSG") {
+                                id
+                            }
+                        }
+                `;
+                try{
+                    const changedStatus = await mondayFetch(changeStatus);
+                    const changedStatusData = await changedStatus.json();
+                    if(changedStatusData.errors){
+                        contentScripts.showWorkingStep('Error in changing status');
+                    }else{
+                        contentScripts.showWorkingStep('Status Changed');
+                    }
+
+                }catch(e){
+                    contentScripts.showWorkingStep('Error in changing status');
+                }
+
+
+                // const updateUser = `
+                //     mutation{
+                //         change_simple_column_value(board_id:${fixedData.mondayFetch.borEffortBoardId},
+                //         item_id:${id},
+                //         column_id: "${fixedData.mondayFetch.columnValuesIds.borEffortBoard.person}",
+                //         value: "${fixedData.mondayFetch.myAccountId}") 
+                //         {
+                //             id
+                //         }
+                //     }
+                // `;
+                
 
             })
         }else{
