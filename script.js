@@ -3733,7 +3733,8 @@ const contentSetup = async()=>{
                         items_page_by_column_values(board_id:1250230293,columns:[{column_id:"text84",column_values:["${deviceId}"]},{column_id: "status",column_values:["Verified"]}]){
                             items{
                                 column_values(ids:["text7"]){
-                                    value
+                                    value,
+                                    text
                                 }
                             }
                         }
@@ -3741,7 +3742,7 @@ const contentSetup = async()=>{
                 const newLead = await mondayFetch(query);
                 const newLeadData = await newLead.json();
                 try{
-                    const columnValue = newLeadData.data.items_page_by_column_values.items[0].column_values[0].value;
+                    const columnValue = newLeadData.data.items_page_by_column_values.items[0].column_values[0].text;
                     console.log(columnValue);
                     window.location.href = columnValue;
                 }catch(e){
