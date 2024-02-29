@@ -3585,9 +3585,9 @@ const popupSetup = async()=>{
 const contentSetup = async()=>{
     // const accountInfo = await contentScripts.accountInfo();
     // console.log(accountInfo);
-    const a = document.createElement('a');
-    a.href = 'https://www.facebook.com/marketplace/item/1588908385216701/kuesgfr88s7iuhf8s76';
-    document.body.append(a);
+    // const a = document.createElement('a');
+    // a.href = 'https://www.facebook.com/marketplace/item/1588908385216701/kuesgfr88s7iuhf8s76';
+    // document.body.append(a);
     contentScripts.setupConsoleBoard();
     
     
