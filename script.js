@@ -3597,7 +3597,9 @@ const contentSetup = async()=>{
     if(deviceId){
         if(await contentScripts.isProgramReady()){
             const myId = 30273194;
-            contentScripts.showDebugButton('EDIT CURRENT LEAD',async()=>{
+            contentScripts.showDebugButton('EDIT CURRENT LEAD',async(e)=>{
+                const button = e.target;
+                button.disabled = true;
                 const currentItemElement = document.querySelector('a[href*="/marketplace/item/"]');
                 if(currentItemElement){
                     const href = currentItemElement.getAttribute('href');
@@ -3627,8 +3629,14 @@ const contentSetup = async()=>{
                                 }
                             }
                         `;
-                        const item = await mondayFetch(query);
-                        const itemData = await item.json();
+                        let itemData = null;
+                        try{
+                            const item = await mondayFetch(query);
+                            itemData = await item.json();
+                        }catch(e){
+                            contentScripts.showWorkingStep('Error in fetching item');
+                            return false;
+                        }
                         if(itemData.errors){
                             contentScripts.showWorkingStep('Error in fetching item');
                             return false;
@@ -3638,23 +3646,31 @@ const contentSetup = async()=>{
                             contentScripts.showWorkingStep('No item found on monday BOR Board');
                             return false;
                         }
-                        const singleItem = itemData.data.items_page_by_column_values.items[0];
-                        // updates that has my id as creator id
-                        const id = singleItem.id;
-                        const updates = singleItem.updates.filter(update=>update.creator_id==myId).map(update=>update.text_body);
-                        // status has id status
-                        const status = singleItem.column_values.find(column=>column.column.id=='status').text;
-                        // vin has text7 status
-                        const vin = singleItem.column_values.find(column=>column.column.id=='text6').text;
-                        return{
-                            id,
-                            updates,
-                            status,
-                            vin,
-                        
-                        };
+                        try{
+                            const singleItem = itemData.data.items_page_by_column_values.items[0];
+                            // updates that has my id as creator id
+                            const id = singleItem.id;
+                            const updates = singleItem.updates.filter(update=>update.creator_id==myId).map(update=>update.text_body);
+                            // status has id status
+                            const status = singleItem.column_values.find(column=>column.column.id=='status').text;
+                            // vin has text7 status
+                            const vin = singleItem.column_values.find(column=>column.column.id=='text6').text;
+                            return{
+                                id,
+                                updates,
+                                status,
+                                vin,
+                            
+                            };
+                        }catch(e){
+                            contentScripts.showWorkingStep('Error in fetching item');
+                            return false;
+                        }
                     };
                     const updateSectionData = await generateUpdateSectionData(itemID);
+                    if(!updateSectionData){
+                        return;
+                    }
                     const generateUpdateSection = (updateSectionData)=>{
                         const dynamicConsole = document.getElementById(fixedData.workingSelectors.content.console+'dynamic');
                         dynamicConsole.innerHTML = '';
@@ -3743,7 +3759,9 @@ const contentSetup = async()=>{
                     contentScripts.showWorkingStep('No link found on page')
                 }
             });
-            contentScripts.showDebugButton('GET NEW LEAD',async()=>{
+            contentScripts.showDebugButton('GET NEW LEAD',async(e)=>{
+                const button = e.target;
+                button.disabled = true;
                 const query = `
                     query{
                         items_page_by_column_values(board_id:1250230293,columns:[{column_id:"text84",column_values:["${deviceId}"]},{column_id: "status",column_values:["Verified"]}]){
@@ -3755,24 +3773,38 @@ const contentSetup = async()=>{
                             }
                         }
                     }`;
-                const newLead = await mondayFetch(query);
-                const newLeadData = await newLead.json();
                 try{
+                    const newLead = await mondayFetch(query);
+                    const newLeadData = await newLead.json();
                     const columnValue = newLeadData.data.items_page_by_column_values.items[0].column_values[0].text;
                     console.log(columnValue);
                     window.location.href = columnValue;
                 }catch(e){
                     contentScripts.showWorkingStep(`No New Lead Found`);
                 }
+                button.disabled = false;
 
             });
-            contentScripts.showDebugButton('COPY MESSAGE',async()=>{
+            contentScripts.showDebugButton('COPY MESSAGE',async(e)=>{
+                const button = e.target;
+                button.disabled = true;
+                await sleep(1000);
                 const firstMessages = fixedData.firstMessages;
                 const randomFirstMessage = firstMessages[Math.floor(Math.random()*firstMessages.length)];
-                await navigator.clipboard.writeText(randomFirstMessage);
+                try{
+                    await navigator.clipboard.writeText(randomFirstMessage);
+                }catch(e){
+                    contentScripts.showWorkingStep('Error in copying message');
+                    button.disabled = false;
+                    return false;
+                }
                 contentScripts.showWorkingStep(`Random First Message Copied`);
+                button.disabled = false;
+
             });
-            contentScripts.showDebugButton('Mark as First MSG SENT', async()=>{
+            contentScripts.showDebugButton('Mark as First MSG SENT', async(e)=>{
+                const button = e.target;
+                button.disabled = true;
                 const tabUrl = window.location.href;
                 const itemID = tabUrl.match(/\d+/g).map(Number)[0];
                 const url = `https://www.facebook.com/marketplace/item/${itemID}`;
@@ -3787,15 +3819,24 @@ const contentSetup = async()=>{
                                 }
                             }
                         `;
-                const item = await mondayFetch(query);
-                const itemData = await item.json();
+                let itemData = null;
+                try{
+                    const item = await mondayFetch(query);
+                    itemData = await item.json();
+                }catch(e){
+                    contentScripts.showWorkingStep('Error in fetching item');
+                    button.disabled = false;
+                    return false;
+                }
                 if(itemData.errors){
                     contentScripts.showWorkingStep('Error in fetching item');
+                    button.disabled = false;
                     return false;
                 }
                 const itemCount = itemData.data.items_page_by_column_values.items.length;
                 if(itemCount==0){
                     contentScripts.showWorkingStep('This item do not exists on monday BOR Board');
+                    button.disabled = false;
                     return false;
                 }
                 const singleItem = itemData.data.items_page_by_column_values.items[0];
@@ -3825,7 +3866,7 @@ const contentSetup = async()=>{
                     contentScripts.showWorkingStep('Error in changing status');
                 }
 
-
+                button.disabled = false;
                 // const updateUser = `
                 //     mutation{
                 //         change_simple_column_value(board_id:${fixedData.mondayFetch.borEffortBoardId},
@@ -3840,7 +3881,9 @@ const contentSetup = async()=>{
                 
 
             })
-            contentScripts.showDebugButton('Mark new lead Link Gone', async()=>{
+            contentScripts.showDebugButton('Mark new lead Link Gone', async(e)=>{
+                const button = e.target;
+                button.disabled = true;
                 const tabUrl = window.location.href;
                 const itemID = tabUrl.match(/\d+/g).map(Number)[0];
                 const url = `https://www.facebook.com/marketplace/item/${itemID}`;
@@ -3864,15 +3907,24 @@ const contentSetup = async()=>{
                             }
                         }
                     }`;
-                const item = await mondayFetch(query);
-                const itemData = await item.json();
+                let itemData = null;
+                try{
+                    const item = await mondayFetch(query);
+                    itemData = await item.json();
+                }catch(e){
+                    contentScripts.showWorkingStep('Error in fetching item');
+                    button.disabled = false;
+                    return false;
+                }
                 if(itemData.errors){
                     contentScripts.showWorkingStep('Error in fetching item');
+                    button.disabled = false;
                     return false;
                 }
                 const itemCount = itemData.data.items_page_by_column_values.items.length;
                 if(itemCount==0){
                     contentScripts.showWorkingStep('This item do not exists on monday BOR Board');
+                    button.disabled = false;
                     return false;
                 }
                 const singleItem = itemData.data.items_page_by_column_values.items[0];
@@ -3901,7 +3953,7 @@ const contentSetup = async()=>{
                 }catch(e){
                     contentScripts.showWorkingStep('Error in changing status');
                 }
-
+                button.disabled = false;
 
                 // const updateUser = `
                 //     mutation{
