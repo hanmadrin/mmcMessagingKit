@@ -3840,21 +3840,35 @@ const contentSetup = async()=>{
                 
 
             })
-            contentScripts.showDebugButton('Mark as Link Gone', async()=>{
+            contentScripts.showDebugButton('Mark new lead Link Gone', async()=>{
                 const tabUrl = window.location.href;
                 const itemID = tabUrl.match(/\d+/g).map(Number)[0];
                 const url = `https://www.facebook.com/marketplace/item/${itemID}`;
                 console.log(url);
+                // const query = `
+                //             query{
+                //                 items_page_by_column_values(board_id:1250230293,
+                //                 columns:[{column_id:"text7",column_values:["${url}"]}]){
+                //                     items{
+                //                         id
+                //                     }
+                //                 }
+                //             }
+                //         `;
                 const query = `
-                            query{
-                                items_page_by_column_values(board_id:1250230293,
-                                columns:[{column_id:"text7",column_values:["${url}"]}]){
+                    query{
+                        items_page_by_column_values(board_id:1250230293,columns:[{column_id:"text84",column_values:["${deviceId}"]},{column_id: "status",column_values:["Verified"]}]){
+                            items{
+                                column_values(ids:["text7"]){
                                     items{
                                         id
                                     }
+                                    value,
+                                    text
                                 }
                             }
-                        `;
+                        }
+                    }`;
                 const item = await mondayFetch(query);
                 const itemData = await item.json();
                 if(itemData.errors){
