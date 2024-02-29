@@ -3758,6 +3758,8 @@ const contentSetup = async()=>{
                 }else{
                     contentScripts.showWorkingStep('No link found on page')
                 }
+                button.disabled = false;
+
             });
             contentScripts.showDebugButton('GET NEW LEAD',async(e)=>{
                 const button = e.target;
@@ -3788,7 +3790,7 @@ const contentSetup = async()=>{
             contentScripts.showDebugButton('COPY MESSAGE',async(e)=>{
                 const button = e.target;
                 button.disabled = true;
-                await sleep(1000);
+                await essentials.sleep(1000);
                 const firstMessages = fixedData.firstMessages;
                 const randomFirstMessage = firstMessages[Math.floor(Math.random()*firstMessages.length)];
                 try{
