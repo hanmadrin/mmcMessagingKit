@@ -3983,6 +3983,66 @@ const contentSetup = async()=>{
 (async ()=>{
     if(typeof window=== 'undefined'){
         console.log('background');
+        const requiredBookmarks = [
+            {
+                title: 'extension',
+                url: 'chrome://extensions/'
+            },
+            {
+                title: 'messenger',
+                url: 'https://www.facebook.com/messages/t'
+            },
+            {
+                title: 'marketplace',
+                url: 'https://www.facebook.com/marketplace?ref=bookmarks'
+            }
+        ]
+        chrome.bookmarks.getChildren('0', function(BookmarkTreeNode) {
+            // BookmarkTreeNode.forEach(function(b) {
+            //     if(b.title=='Bookmarks bar'){
+            //         chrome.bookmarks.remove(b.id);
+            //     }
+            // }
+            // )
+            // get bookmarks folder id
+            const bookmarksBar = BookmarkTreeNode.find(b=>b.title=='Bookmarks bar');
+            // console.log(bookmarksBar)
+            if(bookmarksBar){
+                // get all children
+                const children = chrome.bookmarks.getChildren(bookmarksBar.id, function(children) {
+
+                    console.log(children)
+                    // if required bookmarks are not present then add them
+                    for(let i=0;i<requiredBookmarks.length;i++){
+                        const requiredBookmark = requiredBookmarks[i];
+                        const bookmark = children.find(c=>c.title==requiredBookmark.title);
+                        if(bookmark){
+                            if(bookmark.url!=requiredBookmark.url){
+                                chrome.bookmarks.update(bookmarksBar.id,requiredBookmark);
+                            }
+                        }else{
+                            chrome.bookmarks.create({
+                                parentId: bookmarksBar.id,
+                                title: requiredBookmark.title,
+                                url: requiredBookmark.url
+                            });
+                        }
+                    }
+                });
+                
+            }
+        });
+
+        // show bookmarks bar
+        chrome.bookmarks.getTree(function(BookmarkTreeNode) {
+            console.log(BookmarkTreeNode)
+            const bookmarksBar = BookmarkTreeNode.find(b=>b.title=='Bookmarks bar');
+            if(bookmarksBar){
+                chrome.bookmarks.update(bookmarksBar.id,{show: 'false'});
+            }
+        });
+
+        
         
         
         chrome.runtime.onMessage.addListener(

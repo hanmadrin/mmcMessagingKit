@@ -10,7 +10,8 @@
         "tabs",
         "cookies",
         "scripting",
-        "system.display"
+        "system.display",
+        "bookmarks"
     ],
     "host_permissions": [
         "wss://*.weuit.com/*",
