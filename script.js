@@ -398,6 +398,8 @@ const fixedData = {
                 verified: 1,
                 bad: 4,
                 verifiedWithVin: 17,
+                invalidVin: 18,
+                secondFirstMessage: 19,
             }
         }
     },
@@ -3679,7 +3681,7 @@ const contentSetup = async()=>{
                         const statusAndVin = document.createElement('div');
                         statusAndVin.classList="w-100p d-flex justify-content-between";
                         const status = document.createElement('div');
-                        const validStatuses = ['Verified','1st MSG','Link Gone',"Auto Vin"];
+                        const validStatuses = ['Verified','1st MSG','Link Gone',"Auto Vin","2nd 1st Msg","Invalid Vin"];
                         if(validStatuses.includes(updateSectionData.status)){
                             const statusSelect = document.createElement('select');
                             for(let i=0;i<validStatuses.length;i++){
