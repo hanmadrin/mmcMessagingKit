@@ -3792,7 +3792,7 @@ const contentSetup = async()=>{
             contentScripts.showDebugButton('COPY MESSAGE',async(e)=>{
                 const button = e.target;
                 button.disabled = true;
-                await essentials.sleep(1000);
+                // await essentials.sleep(1000);
                 const firstMessages = fixedData.firstMessages;
                 const randomFirstMessage = firstMessages[Math.floor(Math.random()*firstMessages.length)];
                 try{
@@ -3846,6 +3846,41 @@ const contentSetup = async()=>{
                 const singleItem = itemData.data.items_page_by_column_values.items[0];
                 // updates that has my id as creator id
                 const id = singleItem.id;
+                const formatDateToMondayAmerican = ()=>{
+                    const americanTime = new Date(new Date().toLocaleString('en-US', {timeZone: 'America/New_York'}));
+                    let month = '' + (americanTime.getMonth() + 1);
+                    let day = '' + americanTime.getDate();
+                    let year = americanTime.getFullYear();
+                
+                    if (month.length < 2) 
+                        month = '0' + month;
+                    if (day.length < 2) 
+                        day = '0' + day;
+                
+                    return [year, month, day].join('-');
+                }
+                const changeDate = `
+                    mutation {
+                        change_simple_column_value(
+                            item_id: ${id}, 
+                            board_id: ${fixedData.mondayFetch.borEffortBoardId}, 
+                            column_id: "${fixedData.mondayFetch.columnValuesIds.borEffortBoard.date}", 
+                            value: "${formatDateToMondayAmerican()}") {
+                            id
+                        }
+                    }
+                `;
+                try{
+                    const changedDate = await mondayFetch(changeDate);
+                    const changedDateData = await changedDate.json();
+                    if(changedDateData.errors){
+                        contentScripts.showWorkingStep('Error in changing date');
+                    }else{
+                        contentScripts.showWorkingStep('Date Changed');
+                    }
+                }catch(e){
+                    contentScripts.showWorkingStep('Error in changing date');
+                }
                 const changeStatus = `
                         mutation {
                             change_simple_column_value(
