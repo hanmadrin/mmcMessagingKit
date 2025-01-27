@@ -3591,13 +3591,14 @@ const contentSetup = async()=>{
     // a.href = 'https://www.facebook.com/marketplace/item/1588908385216701/kuesgfr88s7iuhf8s76';
     // document.body.append(a);
     contentScripts.setupConsoleBoard();
-    
+    console.log('Here');
     
     const metaInformation = new ChromeStorage('metaInformation');
     const metaInformationValues = await metaInformation.GET();
     const deviceId = metaInformationValues.deviceId;
     if(deviceId){
         if(await contentScripts.isProgramReady()){
+            console.log('starting working');
             const myId = 30273194;
             contentScripts.showDebugButton('EDIT CURRENT LEAD',async(e)=>{
                 const button = e.target;
