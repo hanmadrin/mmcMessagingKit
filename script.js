@@ -3585,6 +3585,7 @@ const popupSetup = async()=>{
      
 }
 const contentSetup = async()=>{
+    console.log('content');
     // const accountInfo = await contentScripts.accountInfo();
     // console.log(accountInfo);
     // const a = document.createElement('a');
